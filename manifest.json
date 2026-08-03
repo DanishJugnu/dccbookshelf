@@ -50,5 +50,18 @@
     "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1785785113118-Std10_Part1Part2_Ch1Ch2_Test.pdf",
     "size": 272877,
     "uploadedAt": "2026-08-03T19:25:15.606Z"
+  },
+  {
+    "id": "1785785152978",
+    "title": "IX Maths Test",
+    "className": "9",
+    "board": "CBSE",
+    "subject": "Mathematics",
+    "note": "Test",
+    "filename": "NumberSystems_AlgebraicIdentities_Test.pdf",
+    "path": "files/1785785152978-NumberSystems_AlgebraicIdentities_Test.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1785785152978-NumberSystems_AlgebraicIdentities_Test.pdf",
+    "size": 241086,
+    "uploadedAt": "2026-08-03T19:25:55.378Z"
   }
 ]
