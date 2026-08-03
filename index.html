@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decent Coaching Classes — Study Material</title>
+<meta name="description" content="Test papers and worksheets for Decent Coaching Classes (Kirti) students.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="ruled">
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <p class="masthead-eyebrow">Decent Coaching Classes · Kirti</p>
+    <h1>Study Material Desk</h1>
+    <p>Every worksheet and test paper your batch has been given, filed by date. Find your class, download, print.</p>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="controls-card">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="text" id="searchInput" placeholder="Search by title, chapter, topic…">
+    </div>
+    <select id="classFilter"><option value="">All Classes</option></select>
+    <select id="boardFilter"><option value="">All Boards</option></select>
+    <select id="subjectFilter"><option value="">All Subjects</option></select>
+  </div>
+</div>
+
+<main class="content" id="content">
+  <div class="state-block" id="loadingState">
+    <p style="font-family:var(--font-stamp); font-size:0.8rem; letter-spacing:0.05em;">LOADING REGISTER…</p>
+  </div>
+</main>
+
+<footer class="foot">Decent Coaching Classes · Kirti — study material desk</footer>
+
+<script>
+const MANIFEST_URL = 'manifest.json?t=' + Date.now();
+
+let ALL_FILES = [];
+
+function fmtBytes(b){
+  if(!b) return '';
+  if(b < 1024) return b + ' B';
+  if(b < 1024*1024) return (b/1024).toFixed(0) + ' KB';
+  return (b/(1024*1024)).toFixed(1) + ' MB';
+}
+
+function stampParts(dateStr){
+  const d = new Date(dateStr);
+  const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  return { day: d.getDate(), mon: months[d.getMonth()], yr: d.getFullYear() };
+}
+
+function bucketLabel(dateStr){
+  const now = new Date();
+  const d = new Date(dateStr);
+  const startOfDay = x => new Date(x.getFullYear(), x.getMonth(), x.getDate());
+  const diffDays = Math.round((startOfDay(now) - startOfDay(d)) / 86400000);
+  if(diffDays <= 0) return 'Today';
+  if(diffDays === 1) return 'Yesterday';
+  if(diffDays <= 7) return 'This Week';
+  if(diffDays <= 30) return 'This Month';
+  return 'Earlier';
+}
+
+const BUCKET_ORDER = ['Today','Yesterday','This Week','This Month','Earlier'];
+
+function fileCardHTML(f){
+  const s = stampParts(f.uploadedAt);
+  return `
+    <article class="file-card">
+      <div class="file-card-top">
+        <h3 class="file-title">${escapeHTML(f.title)}</h3>
+        <div class="stamp">${s.mon}<br>${s.day}<br>${s.yr}</div>
+      </div>
+      <div class="tag-row">
+        ${f.className ? `<span class="tag">Class ${escapeHTML(f.className)}</span>` : ''}
+        ${f.board ? `<span class="tag board">${escapeHTML(f.board)}</span>` : ''}
+        ${f.subject ? `<span class="tag">${escapeHTML(f.subject)}</span>` : ''}
+      </div>
+      ${f.note ? `<p class="file-meta">${escapeHTML(f.note)}</p>` : ''}
+      <p class="file-meta">${escapeHTML(f.filename || '')} ${f.size ? '· ' + fmtBytes(f.size) : ''}</p>
+      <div class="file-actions">
+        <a class="btn-download" href="${f.rawUrl}" target="_blank" rel="noopener" download="${escapeHTML(f.filename||'')}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          Download
+        </a>
+      </div>
+    </article>
+  `;
+}
+
+function escapeHTML(str){
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function populateFilterOptions(){
+  const classes = [...new Set(ALL_FILES.map(f=>f.className).filter(Boolean))].sort();
+  const boards = [...new Set(ALL_FILES.map(f=>f.board).filter(Boolean))].sort();
+  const subjects = [...new Set(ALL_FILES.map(f=>f.subject).filter(Boolean))].sort();
+
+  const fill = (sel, items, prefix) => {
+    items.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = prefix ? `${prefix} ${v}` : v;
+      sel.appendChild(opt);
+    });
+  };
+  fill(document.getElementById('classFilter'), classes, 'Class');
+  fill(document.getElementById('boardFilter'), boards, '');
+  fill(document.getElementById('subjectFilter'), subjects, '');
+}
+
+function currentFilters(){
+  return {
+    q: document.getElementById('searchInput').value.trim().toLowerCase(),
+    cls: document.getElementById('classFilter').value,
+    board: document.getElementById('boardFilter').value,
+    subject: document.getElementById('subjectFilter').value
+  };
+}
+
+function render(){
+  const { q, cls, board, subject } = currentFilters();
+  let list = ALL_FILES.filter(f => {
+    if(cls && f.className !== cls) return false;
+    if(board && f.board !== board) return false;
+    if(subject && f.subject !== subject) return false;
+    if(q){
+      const hay = [f.title, f.subject, f.note, f.className, f.board].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  list.sort((a,b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+
+  const content = document.getElementById('content');
+
+  if(list.length === 0){
+    content.innerHTML = `
+      <div class="state-block">
+        <p style="font-family:var(--font-stamp); font-size:0.75rem; letter-spacing:0.06em;">— EMPTY REGISTER —</p>
+        <h3>Nothing here yet</h3>
+        <p>${ALL_FILES.length === 0 ? "No material has been uploaded yet. Check back soon." : "No files match your filters — try clearing search or filters."}</p>
+      </div>`;
+    return;
+  }
+
+  const buckets = {};
+  list.forEach(f => {
+    const b = bucketLabel(f.uploadedAt);
+    (buckets[b] = buckets[b] || []).push(f);
+  });
+
+  let html = '';
+  BUCKET_ORDER.forEach(b => {
+    if(!buckets[b]) return;
+    html += `
+      <section class="date-section">
+        <div class="date-section-head">
+          <h2>${b}</h2>
+          <span class="count">${buckets[b].length} file${buckets[b].length>1?'s':''}</span>
+        </div>
+        <div class="card-grid">
+          ${buckets[b].map(fileCardHTML).join('')}
+        </div>
+      </section>`;
+  });
+  content.innerHTML = html;
+}
+
+async function init(){
+  try{
+    const res = await fetch(MANIFEST_URL, { cache: 'no-store' });
+    if(!res.ok) throw new Error('manifest not found');
+    ALL_FILES = await res.json();
+  }catch(e){
+    ALL_FILES = [];
+  }
+  populateFilterOptions();
+  render();
+  ['searchInput'].forEach(id => document.getElementById(id).addEventListener('input', render));
+  ['classFilter','boardFilter','subjectFilter'].forEach(id => document.getElementById(id).addEventListener('change', render));
+}
+
+init();
+</script>
+</body>
+</html>

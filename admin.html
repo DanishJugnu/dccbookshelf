@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Decent Coaching Classes</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body class="ruled">
+
+<header class="masthead" style="padding-bottom:1.6rem;">
+  <div class="masthead-inner">
+    <p class="masthead-eyebrow">Decent Coaching Classes · Kirti — Admin</p>
+    <h1 style="font-size:1.7rem;">Upload Desk</h1>
+    <p>Only for you. Tag a file and send it straight to the student page.</p>
+  </div>
+</header>
+
+<div class="admin-wrap">
+
+  <div class="panel" id="setupPanel">
+    <h2>One-time setup</h2>
+    <div class="field">
+      <label for="ghOwner">GitHub username</label>
+      <input type="text" id="ghOwner" placeholder="e.g. dan-kirti">
+    </div>
+    <div class="field">
+      <label for="ghRepo">Repository name</label>
+      <input type="text" id="ghRepo" placeholder="e.g. dcc-study-material">
+    </div>
+    <div class="field">
+      <label for="ghToken">GitHub personal access token</label>
+      <input type="password" id="ghToken" placeholder="ghp_...">
+      <p class="hint">Saved only in this browser on this device. See SETUP.md for how to generate one (fine-grained token, "Contents: Read and write" permission on this repo only).</p>
+    </div>
+    <button class="btn-primary" id="saveConfigBtn" type="button">Save setup</button>
+    <div class="status-line" id="configStatus"></div>
+  </div>
+
+  <div class="panel" id="uploadPanel" style="display:none;">
+    <h2>Upload a file</h2>
+
+    <div class="file-drop" id="dropZone">
+      <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+      <p><strong>Tap to choose a file</strong><br>PDF, Word, or image · one at a time</p>
+      <p id="fileChosenName" style="margin-top:0.5rem;"></p>
+    </div>
+
+    <div class="field" style="margin-top:1rem;">
+      <label for="titleInput">Title (shown to students)</label>
+      <input type="text" id="titleInput" placeholder="e.g. Linear Equations Test Paper">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="classInput">Class</label>
+        <input type="text" id="classInput" placeholder="e.g. 10">
+      </div>
+      <div class="field">
+        <label for="boardInput">Board</label>
+        <select id="boardInput">
+          <option value="">—</option>
+          <option value="SSC">Maharashtra SSC</option>
+          <option value="CBSE">CBSE</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="subjectInput">Subject</label>
+      <input type="text" id="subjectInput" placeholder="e.g. Mathematics">
+    </div>
+
+    <div class="field">
+      <label for="noteInput">Note (optional)</label>
+      <textarea id="noteInput" rows="2" placeholder="e.g. Chapters 1–2, 30 marks"></textarea>
+    </div>
+
+    <button class="btn-primary" id="uploadBtn" type="button" disabled>Upload</button>
+    <div class="status-line" id="uploadStatus"></div>
+  </div>
+
+  <div class="panel" id="recentPanel" style="display:none;">
+    <h2>Recently uploaded (this session)</h2>
+    <div id="recentList"></div>
+  </div>
+
+  <p style="text-align:center;"><a href="admin.html" onclick="resetSetup(); return false;" style="font-size:0.8rem; color:var(--slate);">Change GitHub setup</a></p>
+</div>
+
+<footer class="foot">Decent Coaching Classes · Kirti — admin only, do not share this link</footer>
+
+<script>
+const CFG_KEY = 'dcc_admin_config';
+
+function loadConfig(){
+  try{ return JSON.parse(localStorage.getItem(CFG_KEY) || 'null'); }catch(e){ return null; }
+}
+function saveConfig(cfg){ localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
+function clearConfig(){ localStorage.removeItem(CFG_KEY); }
+
+function resetSetup(){
+  clearConfig();
+  document.getElementById('setupPanel').style.display = 'block';
+  document.getElementById('uploadPanel').style.display = 'none';
+  document.getElementById('recentPanel').style.display = 'none';
+}
+
+function showStatus(el, msg, kind){
+  el.textContent = msg;
+  el.className = 'status-line show ' + kind;
+}
+
+let selectedFile = null;
+
+function b64FromArrayBuffer(buf){
+  let binary = '';
+  const bytes = new Uint8Array(buf);
+  const chunk = 0x8000;
+  for(let i=0; i<bytes.length; i+=chunk){
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i+chunk));
+  }
+  return btoa(binary);
+}
+
+async function ghRequest(cfg, path, opts){
+  const res = await fetch(`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${path}`, Object.assign({
+    headers: {
+      'Authorization': `Bearer ${cfg.token}`,
+      'Accept': 'application/vnd.github+json'
+    }
+  }, opts));
+  return res;
+}
+
+async function ensureManifest(cfg){
+  const res = await ghRequest(cfg, 'manifest.json', {});
+  if(res.status === 404){
+    return { entries: [], sha: null };
+  }
+  if(!res.ok) throw new Error('Could not read manifest.json (' + res.status + ')');
+  const data = await res.json();
+  const content = decodeURIComponent(escape(atob(data.content.replace(/\n/g,''))));
+  let entries = [];
+  try{ entries = JSON.parse(content); }catch(e){ entries = []; }
+  return { entries, sha: data.sha };
+}
+
+async function putManifest(cfg, entries, sha){
+  const jsonStr = JSON.stringify(entries, null, 2);
+  const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
+  const body = {
+    message: 'Update manifest.json',
+    content: b64,
+    branch: cfg.branch || 'main'
+  };
+  if(sha) body.sha = sha;
+  const res = await ghRequest(cfg, 'manifest.json', { method: 'PUT', body: JSON.stringify(body) });
+  if(!res.ok){
+    const t = await res.text();
+    throw new Error('Failed to update manifest.json: ' + res.status + ' ' + t.slice(0,200));
+  }
+  return res.json();
+}
+
+async function uploadFile(cfg, file, meta, onStage){
+  onStage('Reading file…');
+  const buf = await file.arrayBuffer();
+  const b64 = b64FromArrayBuffer(buf);
+
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const stamp = Date.now();
+  const path = `files/${stamp}-${safeName}`;
+
+  onStage('Uploading file to repository…');
+  const putRes = await ghRequest(cfg, path, {
+    method: 'PUT',
+    body: JSON.stringify({
+      message: `Upload ${file.name}`,
+      content: b64,
+      branch: cfg.branch || 'main'
+    })
+  });
+  if(!putRes.ok){
+    const t = await putRes.text();
+    throw new Error('Upload failed: ' + putRes.status + ' ' + t.slice(0,200));
+  }
+
+  onStage('Updating student index…');
+  const { entries, sha } = await ensureManifest(cfg);
+  const rawUrl = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch || 'main'}/${path}`;
+  entries.push({
+    id: String(stamp),
+    title: meta.title || file.name,
+    className: meta.className,
+    board: meta.board,
+    subject: meta.subject,
+    note: meta.note,
+    filename: file.name,
+    path,
+    rawUrl,
+    size: file.size,
+    uploadedAt: new Date().toISOString()
+  });
+  await putManifest(cfg, entries, sha);
+  onStage('Done');
+}
+
+// ---- wire up setup panel ----
+document.getElementById('saveConfigBtn').addEventListener('click', () => {
+  const owner = document.getElementById('ghOwner').value.trim();
+  const repo = document.getElementById('ghRepo').value.trim();
+  const token = document.getElementById('ghToken').value.trim();
+  const statusEl = document.getElementById('configStatus');
+  if(!owner || !repo || !token){
+    showStatus(statusEl, 'Please fill in all three fields.', 'err');
+    return;
+  }
+  saveConfig({ owner, repo, token, branch: 'main' });
+  showStatus(statusEl, 'Saved. You can upload now.', 'ok');
+  document.getElementById('setupPanel').style.display = 'none';
+  document.getElementById('uploadPanel').style.display = 'block';
+  document.getElementById('recentPanel').style.display = 'block';
+});
+
+// ---- wire up upload panel ----
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => {
+  if(fileInput.files[0]){
+    selectedFile = fileInput.files[0];
+    document.getElementById('fileChosenName').textContent = '📎 ' + selectedFile.name;
+    document.getElementById('titleInput').value = document.getElementById('titleInput').value || selectedFile.name.replace(/\.[^.]+$/, '');
+    document.getElementById('uploadBtn').disabled = false;
+  }
+});
+
+document.getElementById('uploadBtn').addEventListener('click', async () => {
+  const cfg = loadConfig();
+  if(!cfg || !selectedFile) return;
+
+  const btn = document.getElementById('uploadBtn');
+  const statusEl = document.getElementById('uploadStatus');
+  btn.disabled = true;
+
+  const meta = {
+    title: document.getElementById('titleInput').value.trim(),
+    className: document.getElementById('classInput').value.trim(),
+    board: document.getElementById('boardInput').value,
+    subject: document.getElementById('subjectInput').value.trim(),
+    note: document.getElementById('noteInput').value.trim()
+  };
+
+  try{
+    await uploadFile(cfg, selectedFile, meta, (stage) => showStatus(statusEl, stage, 'pending'));
+    showStatus(statusEl, `Uploaded "${meta.title}". Visible on the student page in a few seconds.`, 'ok');
+
+    const recentPanel = document.getElementById('recentPanel');
+    const list = document.getElementById('recentList');
+    const item = document.createElement('div');
+    item.className = 'queue-item';
+    item.innerHTML = `<span class="name">${meta.title}</span><span class="stage">UPLOADED</span>`;
+    list.prepend(item);
+
+    // reset form
+    fileInput.value = '';
+    selectedFile = null;
+    document.getElementById('fileChosenName').textContent = '';
+    document.getElementById('titleInput').value = '';
+    document.getElementById('classInput').value = '';
+    document.getElementById('boardInput').value = '';
+    document.getElementById('subjectInput').value = '';
+    document.getElementById('noteInput').value = '';
+  }catch(e){
+    showStatus(statusEl, e.message, 'err');
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+// ---- init ----
+(function init(){
+  const cfg = loadConfig();
+  if(cfg){
+    document.getElementById('ghOwner').value = cfg.owner;
+    document.getElementById('ghRepo').value = cfg.repo;
+    document.getElementById('ghToken').value = cfg.token;
+    document.getElementById('setupPanel').style.display = 'none';
+    document.getElementById('uploadPanel').style.display = 'block';
+    document.getElementById('recentPanel').style.display = 'block';
+  }
+})();
+</script>
+</body>
+</html>
