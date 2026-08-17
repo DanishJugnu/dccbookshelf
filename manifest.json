@@ -362,5 +362,18 @@
     "rawUrl": "https://raw.githubusercontent.com/danishjugnu/dccbookshelf/main/files/1786963289442-12_Aug.pdf",
     "size": 133678,
     "uploadedAt": "2026-08-17T10:41:32.246Z"
+  },
+  {
+    "id": "1786963356541",
+    "title": "13 Aug Class Notes",
+    "className": "Class Notes",
+    "board": "",
+    "subject": "Class Notes",
+    "note": "CN",
+    "filename": "13 aug.pdf",
+    "path": "files/1786963356541-13_aug.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/danishjugnu/dccbookshelf/main/files/1786963356541-13_aug.pdf",
+    "size": 112445,
+    "uploadedAt": "2026-08-17T10:42:39.097Z"
   }
 ]
