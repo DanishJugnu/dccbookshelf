@@ -29,6 +29,8 @@
   </div>
 </div>
 
+  <div id="comingSoon"></div>
+
 <main class="content" id="content">
   <div class="state-block" id="loadingState">
     <p style="font-family:var(--font-stamp); font-size:0.8rem; letter-spacing:0.05em;">LOADING REGISTER…</p>
@@ -41,6 +43,8 @@
 const MANIFEST_URL = 'manifest.json?t=' + Date.now();
 
 let ALL_FILES = [];
+let UPCOMING = [];
+let comingSoonTimer = null;
 
 function fmtBytes(b){
   if(!b) return '';
@@ -96,6 +100,67 @@ function fileCardHTML(f){
 
 function escapeHTML(str){
   return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtCountdown(ms){
+  if(ms <= 0) return 'Live now';
+  const s = Math.floor(ms/1000);
+  const d = Math.floor(s/86400);
+  const h = Math.floor((s%86400)/3600);
+  const m = Math.floor((s%3600)/60);
+  const sec = s%60;
+  const parts = [];
+  if(d) parts.push(d+'d');
+  if(d || h) parts.push(h+'h');
+  if(d || h || m) parts.push(m+'m');
+  parts.push(sec+'s');
+  return parts.join(' ');
+}
+
+function renderComingSoon(){
+  const el = document.getElementById('comingSoon');
+  if(!el) return;
+  if(comingSoonTimer){ clearInterval(comingSoonTimer); comingSoonTimer = null; }
+  if(!UPCOMING || UPCOMING.length === 0){
+    el.innerHTML = '';
+    return;
+  }
+  el.innerHTML = `
+    <div class="controls" style="margin-top:1rem;">
+      <div class="controls-card" style="flex-direction:column; align-items:stretch; gap:0.7rem; border-color: var(--gold);">
+        <div style="font-family:var(--font-stamp); font-size:0.72rem; letter-spacing:0.08em; color:var(--red); text-transform:uppercase;">⏳ Coming Soon</div>
+        ${UPCOMING.map(f => `
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+            <div>
+              <div style="font-family:var(--font-display); font-weight:600; font-size:0.95rem; color:var(--ink);">${escapeHTML(f.title)}</div>
+              <div style="font-size:0.78rem; color:var(--slate);">${f.className ? 'Class '+escapeHTML(f.className)+' · ' : ''}${escapeHTML(f.subject||'')}</div>
+            </div>
+            <div class="countdown" data-target="${f.visibleFrom}" style="font-family:var(--font-stamp); font-size:0.85rem; color:var(--red); white-space:nowrap;"></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  tickCountdowns();
+  comingSoonTimer = setInterval(tickCountdowns, 1000);
+}
+
+function tickCountdowns(){
+  const now = Date.now();
+  let anyLive = false;
+  document.querySelectorAll('#comingSoon .countdown').forEach(elm => {
+    const target = new Date(elm.dataset.target).getTime();
+    const diff = target - now;
+    if(diff <= 0){
+      anyLive = true;
+      elm.textContent = 'Live now — refreshing…';
+    }else{
+      elm.textContent = fmtCountdown(diff);
+    }
+  });
+  if(anyLive){
+    clearInterval(comingSoonTimer);
+    setTimeout(() => location.reload(), 1200);
+  }
 }
 
 function populateFilterOptions(){
@@ -180,16 +245,19 @@ async function init(){
     if(!res.ok) throw new Error('manifest not found');
     const raw = await res.json();
     const now = new Date();
+    const withVisible = raw.map(f => Object.assign({}, f, { visibleFrom: f.visibleFrom || f.uploadedAt }));
     // fall back to uploadedAt for older entries that predate scheduling;
     // hide anything whose go-live time hasn't arrived yet
-    ALL_FILES = raw
-      .map(f => Object.assign({}, f, { visibleFrom: f.visibleFrom || f.uploadedAt }))
-      .filter(f => new Date(f.visibleFrom) <= now);
+    ALL_FILES = withVisible.filter(f => new Date(f.visibleFrom) <= now);
+    UPCOMING = withVisible.filter(f => new Date(f.visibleFrom) > now)
+      .sort((a,b) => new Date(a.visibleFrom) - new Date(b.visibleFrom));
   }catch(e){
     ALL_FILES = [];
+    UPCOMING = [];
   }
   populateFilterOptions();
   render();
+  renderComingSoon();
   ['searchInput'].forEach(id => document.getElementById(id).addEventListener('input', render));
   ['classFilter','boardFilter','subjectFilter'].forEach(id => document.getElementById(id).addEventListener('change', render));
 }
