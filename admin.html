@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Decent Coaching Classes</title>
 <link rel="stylesheet" href="style.css">
+<link rel="manifest" href="app.webmanifest">
+<meta name="theme-color" content="#1B2A4A">
 </head>
 <body class="ruled">
 
@@ -12,11 +14,18 @@
   <div class="masthead-inner">
     <p class="masthead-eyebrow">Decent Coaching Classes · Kirti — Admin</p>
     <h1 style="font-size:1.7rem;">Upload Desk</h1>
-    <p>Only for you. Tag a file and send it straight to the student page.</p>
+    <p>Only for you. Tag a file and send it straight to the student page — or share a file into this app from anywhere on your phone.</p>
   </div>
 </header>
 
 <div class="admin-wrap">
+
+  <div class="panel" id="installHint" style="display:none;">
+    <h2>Enable "Share to" uploads</h2>
+    <p class="hint" style="font-size:0.85rem; line-height:1.5;">
+      To share files into this app from your phone's share sheet (WhatsApp, Gallery, Files, etc.), open this page in Chrome, tap the menu (⋮), and choose <strong>"Add to Home screen."</strong> After that, "DCC Admin" will show up as a share destination anywhere on your phone. This is a one-time step.
+    </p>
+  </div>
 
   <div class="panel" id="setupPanel">
     <h2>One-time setup</h2>
@@ -41,8 +50,8 @@
     <h2>Upload a file</h2>
 
     <div class="file-drop" id="dropZone">
-      <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
-      <p><strong>Tap to choose a file</strong><br>PDF, Word, or image · one at a time</p>
+      <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png">
+      <p><strong>Tap to choose a file</strong><br>or share one into this app · PDF, Word, PPT, or image</p>
       <p id="fileChosenName" style="margin-top:0.5rem;"></p>
     </div>
 
@@ -77,13 +86,36 @@
       <textarea id="noteInput" rows="2" placeholder="e.g. Chapters 1–2, 30 marks"></textarea>
     </div>
 
-    <button class="btn-primary" id="uploadBtn" type="button" disabled>Upload</button>
+    <div class="field">
+      <label>When should this go live?</label>
+      <div style="display:flex; gap:1rem; margin-bottom:0.5rem;">
+        <label style="display:flex; align-items:center; gap:0.35rem; font-weight:400; font-size:0.88rem;">
+          <input type="radio" name="publishMode" value="now" id="publishNow" checked style="width:auto;"> Now
+        </label>
+        <label style="display:flex; align-items:center; gap:0.35rem; font-weight:400; font-size:0.88rem;">
+          <input type="radio" name="publishMode" value="later" id="publishLater" style="width:auto;"> Schedule for later
+        </label>
+      </div>
+      <input type="datetime-local" id="scheduleInput" style="display:none;">
+      <p class="hint">Scheduled files stay hidden from students until this date/time, then appear automatically — filed under that date, not today's date.</p>
+    </div>
+
+    <div style="display:flex; gap:0.6rem;">
+      <button class="btn-primary" id="uploadBtn" type="button" disabled>Upload</button>
+      <button class="btn-primary" id="clearAllBtn" type="button" style="background:var(--slate);">Clear all</button>
+    </div>
     <div class="status-line" id="uploadStatus"></div>
   </div>
 
   <div class="panel" id="recentPanel" style="display:none;">
     <h2>Recently uploaded (this session)</h2>
     <div id="recentList"></div>
+  </div>
+
+  <div class="panel" id="scheduledPanel" style="display:none;">
+    <h2>Scheduled — not yet visible to students</h2>
+    <div id="scheduledList"></div>
+    <p class="hint" id="scheduledEmpty">Nothing scheduled right now.</p>
   </div>
 
   <p style="text-align:center;"><a href="admin.html" onclick="resetSetup(); return false;" style="font-size:0.8rem; color:var(--slate);">Change GitHub setup</a></p>
@@ -105,6 +137,7 @@ function resetSetup(){
   document.getElementById('setupPanel').style.display = 'block';
   document.getElementById('uploadPanel').style.display = 'none';
   document.getElementById('recentPanel').style.display = 'none';
+  document.getElementById('scheduledPanel').style.display = 'none';
 }
 
 function showStatus(el, msg, kind){
@@ -147,11 +180,11 @@ async function ensureManifest(cfg){
   return { entries, sha: data.sha };
 }
 
-async function putManifest(cfg, entries, sha){
+async function putManifest(cfg, entries, sha, message){
   const jsonStr = JSON.stringify(entries, null, 2);
   const b64 = btoa(unescape(encodeURIComponent(jsonStr)));
   const body = {
-    message: 'Update manifest.json',
+    message: message || 'Update manifest.json',
     content: b64,
     branch: cfg.branch || 'main'
   };
@@ -190,6 +223,7 @@ async function uploadFile(cfg, file, meta, onStage){
   onStage('Updating student index…');
   const { entries, sha } = await ensureManifest(cfg);
   const rawUrl = `https://raw.githubusercontent.com/${cfg.owner}/${cfg.repo}/${cfg.branch || 'main'}/${path}`;
+  const nowIso = new Date().toISOString();
   entries.push({
     id: String(stamp),
     title: meta.title || file.name,
@@ -201,10 +235,59 @@ async function uploadFile(cfg, file, meta, onStage){
     path,
     rawUrl,
     size: file.size,
-    uploadedAt: new Date().toISOString()
+    uploadedAt: nowIso,
+    visibleFrom: meta.visibleFrom || nowIso
   });
   await putManifest(cfg, entries, sha);
   onStage('Done');
+}
+
+// ---- Share Target: pick up a file handed off by the service worker ----
+async function checkForSharedFile(){
+  const params = new URLSearchParams(location.search);
+  if(params.get('shared') !== '1') return;
+
+  // clean the URL so a refresh doesn't re-trigger this
+  history.replaceState({}, '', 'admin.html');
+
+  if(!('caches' in window)) return;
+  try{
+    const cache = await caches.open('dcc-share-cache-v1');
+    const res = await cache.match('pending-share');
+    if(!res) return;
+    const blob = await res.blob();
+    const fileName = decodeURIComponent(res.headers.get('X-File-Name') || 'shared-file');
+    const shareTitle = decodeURIComponent(res.headers.get('X-Share-Title') || '');
+    await cache.delete('pending-share');
+
+    const file = new File([blob], fileName, { type: blob.type });
+    selectedFile = file;
+    document.getElementById('fileChosenName').textContent = '📎 ' + file.name;
+    document.getElementById('titleInput').value = shareTitle || file.name.replace(/\.[^.]+$/, '');
+    document.getElementById('uploadBtn').disabled = false;
+  }catch(e){
+    // no pending share, or cache API hiccup — ignore, form still works normally
+  }
+}
+
+// ---- form helpers ----
+function resetFileOnly(){
+  document.getElementById('fileInput').value = '';
+  selectedFile = null;
+  document.getElementById('fileChosenName').textContent = '';
+  document.getElementById('titleInput').value = '';
+  document.getElementById('uploadBtn').disabled = true;
+}
+
+function resetAllFields(){
+  resetFileOnly();
+  document.getElementById('classInput').value = '';
+  document.getElementById('boardInput').value = '';
+  document.getElementById('subjectInput').value = '';
+  document.getElementById('noteInput').value = '';
+  document.getElementById('publishNow').checked = true;
+  document.getElementById('scheduleInput').style.display = 'none';
+  document.getElementById('scheduleInput').value = '';
 }
 
 // ---- wire up setup panel ----
@@ -219,10 +302,16 @@ document.getElementById('saveConfigBtn').addEventListener('click', () => {
   }
   saveConfig({ owner, repo, token, branch: 'main' });
   showStatus(statusEl, 'Saved. You can upload now.', 'ok');
+  showMainPanels();
+  loadScheduled();
+});
+
+function showMainPanels(){
   document.getElementById('setupPanel').style.display = 'none';
   document.getElementById('uploadPanel').style.display = 'block';
   document.getElementById('recentPanel').style.display = 'block';
-});
+  document.getElementById('scheduledPanel').style.display = 'block';
+}
 
 // ---- wire up upload panel ----
 const dropZone = document.getElementById('dropZone');
@@ -237,6 +326,15 @@ fileInput.addEventListener('change', () => {
   }
 });
 
+document.getElementById('publishNow').addEventListener('change', () => {
+  document.getElementById('scheduleInput').style.display = 'none';
+});
+document.getElementById('publishLater').addEventListener('change', () => {
+  document.getElementById('scheduleInput').style.display = 'block';
+});
+
+document.getElementById('clearAllBtn').addEventListener('click', resetAllFields);
+
 document.getElementById('uploadBtn').addEventListener('click', async () => {
   const cfg = loadConfig();
   if(!cfg || !selectedFile) return;
@@ -245,34 +343,43 @@ document.getElementById('uploadBtn').addEventListener('click', async () => {
   const statusEl = document.getElementById('uploadStatus');
   btn.disabled = true;
 
+  const later = document.getElementById('publishLater').checked;
+  let visibleFrom = null;
+  if(later){
+    const val = document.getElementById('scheduleInput').value;
+    if(!val){
+      showStatus(statusEl, 'Pick a date and time for the scheduled release, or switch to "Now."', 'err');
+      btn.disabled = false;
+      return;
+    }
+    visibleFrom = new Date(val).toISOString();
+  }
+
   const meta = {
     title: document.getElementById('titleInput').value.trim(),
     className: document.getElementById('classInput').value.trim(),
     board: document.getElementById('boardInput').value,
     subject: document.getElementById('subjectInput').value.trim(),
-    note: document.getElementById('noteInput').value.trim()
+    note: document.getElementById('noteInput').value.trim(),
+    visibleFrom
   };
 
   try{
     await uploadFile(cfg, selectedFile, meta, (stage) => showStatus(statusEl, stage, 'pending'));
-    showStatus(statusEl, `Uploaded "${meta.title}". Visible on the student page in a few seconds.`, 'ok');
+    showStatus(statusEl, later
+      ? `Uploaded "${meta.title}". It'll go live on ${new Date(visibleFrom).toLocaleString()}.`
+      : `Uploaded "${meta.title}". Visible on the student page in a few seconds.`, 'ok');
 
     const recentPanel = document.getElementById('recentPanel');
     const list = document.getElementById('recentList');
     const item = document.createElement('div');
     item.className = 'queue-item';
-    item.innerHTML = `<span class="name">${meta.title}</span><span class="stage">UPLOADED</span>`;
+    item.innerHTML = `<span class="name">${meta.title}</span><span class="stage">${later ? 'SCHEDULED' : 'UPLOADED'}</span>`;
     list.prepend(item);
 
-    // reset form
-    fileInput.value = '';
-    selectedFile = null;
-    document.getElementById('fileChosenName').textContent = '';
-    document.getElementById('titleInput').value = '';
-    document.getElementById('classInput').value = '';
-    document.getElementById('boardInput').value = '';
-    document.getElementById('subjectInput').value = '';
-    document.getElementById('noteInput').value = '';
+    // Only the file/title reset — class, board, subject, note stay for reuse.
+    resetFileOnly();
+    if(later) loadScheduled();
   }catch(e){
     showStatus(statusEl, e.message, 'err');
   }finally{
@@ -280,17 +387,101 @@ document.getElementById('uploadBtn').addEventListener('click', async () => {
   }
 });
 
+// ---- Scheduled items: view, edit time, cancel ----
+async function loadScheduled(){
+  const cfg = loadConfig();
+  if(!cfg) return;
+  const listEl = document.getElementById('scheduledList');
+  const emptyEl = document.getElementById('scheduledEmpty');
+  try{
+    const { entries } = await ensureManifest(cfg);
+    const now = new Date();
+    const pending = entries.filter(e => e.visibleFrom && new Date(e.visibleFrom) > now)
+      .sort((a,b) => new Date(a.visibleFrom) - new Date(b.visibleFrom));
+
+    if(pending.length === 0){
+      listEl.innerHTML = '';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    emptyEl.style.display = 'none';
+    listEl.innerHTML = pending.map(e => `
+      <div class="queue-item" style="flex-direction:column; align-items:stretch; gap:0.4rem;">
+        <div style="display:flex; justify-content:space-between;">
+          <span class="name">${e.title}</span>
+          <span class="stage">${new Date(e.visibleFrom).toLocaleString()}</span>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <input type="datetime-local" data-id="${e.id}" class="editTimeInput" style="flex:1; padding:0.4rem; font-size:0.8rem; border:1px solid var(--line); border-radius:var(--radius);">
+          <button type="button" class="btn-primary saveTimeBtn" data-id="${e.id}" style="width:auto; padding:0.4rem 0.7rem; font-size:0.78rem;">Save</button>
+          <button type="button" class="btn-primary cancelBtn" data-id="${e.id}" style="width:auto; padding:0.4rem 0.7rem; font-size:0.78rem; background:var(--red);">Cancel</button>
+        </div>
+      </div>
+    `).join('');
+
+    listEl.querySelectorAll('.saveTimeBtn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        const input = listEl.querySelector(`.editTimeInput[data-id="${id}"]`);
+        if(!input.value) return;
+        btn.disabled = true;
+        try{
+          const { entries, sha } = await ensureManifest(cfg);
+          const entry = entries.find(e => e.id === id);
+          if(entry) entry.visibleFrom = new Date(input.value).toISOString();
+          await putManifest(cfg, entries, sha, `Reschedule ${entry ? entry.title : id}`);
+          loadScheduled();
+        }catch(e){
+          alert('Could not update: ' + e.message);
+        }finally{
+          btn.disabled = false;
+        }
+      });
+    });
+
+    listEl.querySelectorAll('.cancelBtn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        if(!confirm('Cancel this scheduled upload? The file stays in your repository but will be removed from the student page listing.')) return;
+        btn.disabled = true;
+        try{
+          const { entries, sha } = await ensureManifest(cfg);
+          const filtered = entries.filter(e => e.id !== id);
+          await putManifest(cfg, filtered, sha, `Cancel scheduled entry ${id}`);
+          loadScheduled();
+        }catch(e){
+          alert('Could not cancel: ' + e.message);
+        }finally{
+          btn.disabled = false;
+        }
+      });
+    });
+  }catch(e){
+    listEl.innerHTML = '';
+    emptyEl.textContent = 'Could not load scheduled items: ' + e.message;
+    emptyEl.style.display = 'block';
+  }
+}
+
 // ---- init ----
-(function init(){
+(async function init(){
+  if('serviceWorker' in navigator){
+    try{ await navigator.serviceWorker.register('sw.js'); }catch(e){ /* ignore */ }
+  }
+  if(!window.matchMedia('(display-mode: standalone)').matches){
+    document.getElementById('installHint').style.display = 'block';
+  }
+
   const cfg = loadConfig();
   if(cfg){
     document.getElementById('ghOwner').value = cfg.owner;
     document.getElementById('ghRepo').value = cfg.repo;
     document.getElementById('ghToken').value = cfg.token;
-    document.getElementById('setupPanel').style.display = 'none';
-    document.getElementById('uploadPanel').style.display = 'block';
-    document.getElementById('recentPanel').style.display = 'block';
+    showMainPanels();
+    loadScheduled();
   }
+
+  await checkForSharedFile();
 })();
 </script>
 </body>
