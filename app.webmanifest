@@ -1,8 +1,8 @@
 {
   "name": "DCC Upload Desk",
   "short_name": "DCC Admin",
-  "start_url": "admin.html",
-  "scope": ".",
+  "start_url": "https://danishjugnu.github.io/dccbookshelf/admin.html",
+  "scope": "https://danishjugnu.github.io/dccbookshelf/",
   "display": "standalone",
   "background_color": "#1B2A4A",
   "theme_color": "#1B2A4A",
@@ -11,7 +11,7 @@
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
   ],
   "share_target": {
-    "action": "admin.html",
+    "action": "https://danishjugnu.github.io/dccbookshelf/admin.html",
     "method": "POST",
     "enctype": "multipart/form-data",
     "params": {
