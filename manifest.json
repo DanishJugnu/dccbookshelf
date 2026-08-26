@@ -1065,5 +1065,19 @@
     "size": 116416,
     "uploadedAt": "2026-08-25T23:11:37.424Z",
     "visibleFrom": "2026-08-27T11:30:00.000Z"
+  },
+  {
+    "id": "1787773674083",
+    "title": "Grammar Gauntlet III Question Paper",
+    "className": "10",
+    "board": "SSC",
+    "subject": "Grammar",
+    "note": "Question Paper",
+    "filename": "DOC-20260825-WA0016.pdf",
+    "path": "files/1787773674083-DOC-20260825-WA0016.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1787773674083-DOC-20260825-WA0016.pdf",
+    "size": 109708,
+    "uploadedAt": "2026-08-26T19:47:56.124Z",
+    "visibleFrom": "2026-08-27T11:30:00.000Z"
   }
 ]
