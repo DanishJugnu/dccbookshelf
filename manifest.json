@@ -1079,5 +1079,19 @@
     "size": 109708,
     "uploadedAt": "2026-08-26T19:47:56.124Z",
     "visibleFrom": "2026-08-27T11:30:00.000Z"
+  },
+  {
+    "id": "1787773937716",
+    "title": "8th Academic Conquest III Question Paper",
+    "className": "8",
+    "board": "SSC",
+    "subject": "Academic Conquest III",
+    "note": "Question paper",
+    "filename": "DOC-20260827-WA0000.pdf",
+    "path": "files/1787773937716-DOC-20260827-WA0000.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1787773937716-DOC-20260827-WA0000.pdf",
+    "size": 115495,
+    "uploadedAt": "2026-08-26T19:52:20.716Z",
+    "visibleFrom": "2026-08-30T02:36:00.000Z"
   }
 ]
