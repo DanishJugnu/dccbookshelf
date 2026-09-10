@@ -1191,5 +1191,19 @@
     "size": 89262,
     "uploadedAt": "2026-08-28T09:28:56.554Z",
     "visibleFrom": "2026-08-28T11:28:00.000Z"
+  },
+  {
+    "id": "1789067061426",
+    "title": "8th SB Mind Your Math IV Question Paper",
+    "className": "8th",
+    "board": "SSC",
+    "subject": "Mind Your Math IV",
+    "note": "Question Paper",
+    "filename": "DOC-20260911-WA0000.pdf",
+    "path": "files/1789067061426-DOC-20260911-WA0000.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1789067061426-DOC-20260911-WA0000.pdf",
+    "size": 191519,
+    "uploadedAt": "2026-09-10T19:04:25.749Z",
+    "visibleFrom": "2026-09-14T03:30:00.000Z"
   }
 ]
