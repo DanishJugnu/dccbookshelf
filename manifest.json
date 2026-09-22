@@ -1513,5 +1513,19 @@
     "size": 326614,
     "uploadedAt": "2026-09-22T13:51:12.072Z",
     "visibleFrom": "2026-09-22T13:51:12.072Z"
+  },
+  {
+    "id": "1790085104747",
+    "title": "8th SB Maths Worksheet",
+    "className": "8",
+    "board": "SSC",
+    "subject": "Maths",
+    "note": "Worksheet",
+    "filename": "DOC-20260922-WA0041.pdf",
+    "path": "files/1790085104747-DOC-20260922-WA0041.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1790085104747-DOC-20260922-WA0041.pdf",
+    "size": 177558,
+    "uploadedAt": "2026-09-22T13:51:52.198Z",
+    "visibleFrom": "2026-09-22T13:51:52.198Z"
   }
 ]
