@@ -1485,5 +1485,19 @@
     "size": 203854,
     "uploadedAt": "2026-09-21T11:16:21.926Z",
     "visibleFrom": "2026-09-21T12:30:00.000Z"
+  },
+  {
+    "id": "1790084743275",
+    "title": "8th Sarvadnya Maths Worksheet",
+    "className": "8",
+    "board": "CBSE",
+    "subject": "Maths",
+    "note": "Worksheet",
+    "filename": "DOC-20260922-WA0038.pdf",
+    "path": "files/1790084743275-DOC-20260922-WA0038.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1790084743275-DOC-20260922-WA0038.pdf",
+    "size": 331879,
+    "uploadedAt": "2026-09-22T13:45:47.014Z",
+    "visibleFrom": "2026-09-22T13:45:47.014Z"
   }
 ]
