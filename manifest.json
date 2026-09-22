@@ -1499,5 +1499,19 @@
     "size": 331879,
     "uploadedAt": "2026-09-22T13:45:47.014Z",
     "visibleFrom": "2026-09-22T13:45:47.014Z"
+  },
+  {
+    "id": "1790085062371",
+    "title": "10th Shivraj Maths Worksheet",
+    "className": "10",
+    "board": "SSC",
+    "subject": "Maths",
+    "note": "Worksheet",
+    "filename": "DOC-20260922-WA0039.pdf",
+    "path": "files/1790085062371-DOC-20260922-WA0039.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1790085062371-DOC-20260922-WA0039.pdf",
+    "size": 326614,
+    "uploadedAt": "2026-09-22T13:51:12.072Z",
+    "visibleFrom": "2026-09-22T13:51:12.072Z"
   }
 ]
