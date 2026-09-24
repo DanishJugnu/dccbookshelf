@@ -1583,5 +1583,19 @@
     "size": 326478,
     "uploadedAt": "2026-09-24T12:33:07.735Z",
     "visibleFrom": "2026-09-24T12:33:07.735Z"
+  },
+  {
+    "id": "1790253198851",
+    "title": "24 Sept",
+    "className": "Class Notes",
+    "board": "",
+    "subject": "CN",
+    "note": "notes pdf",
+    "filename": "24 September.pdf",
+    "path": "files/1790253198851-24_September.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/danishjugnu/dccbookshelf/main/files/1790253198851-24_September.pdf",
+    "size": 342253,
+    "uploadedAt": "2026-09-24T12:33:22.990Z",
+    "visibleFrom": "2026-09-24T12:33:22.990Z"
   }
 ]
