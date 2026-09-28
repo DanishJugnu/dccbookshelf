@@ -1961,5 +1961,19 @@
     "size": 235673,
     "uploadedAt": "2026-09-28T19:17:40.593Z",
     "visibleFrom": "2026-09-28T19:17:40.593Z"
+  },
+  {
+    "id": "1790623135742",
+    "title": "X SB Worksheet",
+    "className": "10",
+    "board": "SSC",
+    "subject": "Maths",
+    "note": "Worksheet",
+    "filename": "X_SB_Worksheet_Part1_Part2.pdf",
+    "path": "files/1790623135742-X_SB_Worksheet_Part1_Part2.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1790623135742-X_SB_Worksheet_Part1_Part2.pdf",
+    "size": 294910,
+    "uploadedAt": "2026-09-28T19:18:57.961Z",
+    "visibleFrom": "2026-09-28T19:18:57.961Z"
   }
 ]
