@@ -1933,5 +1933,19 @@
     "size": 163000,
     "uploadedAt": "2026-09-28T17:31:49.520Z",
     "visibleFrom": "2026-09-28T17:31:49.520Z"
+  },
+  {
+    "id": "1790616789521",
+    "title": "IX CBSE Maths Worksheet",
+    "className": "9",
+    "board": "CBSE",
+    "subject": "Maths",
+    "note": "Worksheet",
+    "filename": "Class9_CBSE_Maths_Worksheet_Ch1-7.pdf",
+    "path": "files/1790616789521-Class9_CBSE_Maths_Worksheet_Ch1-7.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1790616789521-Class9_CBSE_Maths_Worksheet_Ch1-7.pdf",
+    "size": 203411,
+    "uploadedAt": "2026-09-28T17:33:13.030Z",
+    "visibleFrom": "2026-09-28T17:33:13.030Z"
   }
 ]
