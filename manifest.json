@@ -1975,5 +1975,19 @@
     "size": 294910,
     "uploadedAt": "2026-09-28T19:18:57.961Z",
     "visibleFrom": "2026-09-28T19:18:57.961Z"
+  },
+  {
+    "id": "1790658279191",
+    "title": "X Semi Maths Worksheet",
+    "className": "10",
+    "board": "SSC",
+    "subject": "Maths",
+    "note": "Worksheet",
+    "filename": "X_SB_SemiEnglish_Worksheet_Ch1-3.pdf",
+    "path": "files/1790658279191-X_SB_SemiEnglish_Worksheet_Ch1-3.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1790658279191-X_SB_SemiEnglish_Worksheet_Ch1-3.pdf",
+    "size": 112060,
+    "uploadedAt": "2026-09-29T05:04:41.410Z",
+    "visibleFrom": "2026-09-29T05:04:41.410Z"
   }
 ]
