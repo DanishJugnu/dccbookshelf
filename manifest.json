@@ -2101,5 +2101,19 @@
     "size": 106016,
     "uploadedAt": "2026-10-01T12:43:42.288Z",
     "visibleFrom": "2026-10-01T12:43:42.288Z"
+  },
+  {
+    "id": "1790858870700",
+    "title": "1 October",
+    "className": "Class Notes",
+    "board": "",
+    "subject": "CN",
+    "note": "CN",
+    "filename": "1 October.pdf",
+    "path": "files/1790858870700-1_October.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/danishjugnu/dccbookshelf/main/files/1790858870700-1_October.pdf",
+    "size": 207844,
+    "uploadedAt": "2026-10-01T12:47:53.028Z",
+    "visibleFrom": "2026-10-01T12:47:53.028Z"
   }
 ]
