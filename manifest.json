@@ -2297,5 +2297,19 @@
     "size": 3365634,
     "uploadedAt": "2026-10-04T07:09:48.253Z",
     "visibleFrom": "2026-10-04T07:09:48.253Z"
+  },
+  {
+    "id": "1791110561150",
+    "title": "8th Mind Your Math VII Question Paper",
+    "className": "8",
+    "board": "SSC",
+    "subject": "Mind Your Math VII",
+    "note": "Full Syllabus",
+    "filename": "MindYourMath-VII_VIII-SB_Test.pdf",
+    "path": "files/1791110561150-MindYourMath-VII_VIII-SB_Test.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1791110561150-MindYourMath-VII_VIII-SB_Test.pdf",
+    "size": 155773,
+    "uploadedAt": "2026-10-04T10:42:43.550Z",
+    "visibleFrom": "2026-10-05T14:30:00.000Z"
   }
 ]
