@@ -2423,5 +2423,19 @@
     "size": 99245,
     "uploadedAt": "2026-10-04T18:41:36.970Z",
     "visibleFrom": "2026-10-05T14:30:00.000Z"
+  },
+  {
+    "id": "1791140140101",
+    "title": "9th CBSE Mind Your Math VII Question Paper",
+    "className": "9",
+    "board": "CBSE",
+    "subject": "Mind Your Math VII",
+    "note": "Full Syllabus 80 Marks Question Paper",
+    "filename": "9th CBSE Mind Your Math VII Question Paper.pdf",
+    "path": "files/1791140140101-9th_CBSE_Mind_Your_Math_VII_Question_Paper.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/danishjugnu/dccbookshelf/main/files/1791140140101-9th_CBSE_Mind_Your_Math_VII_Question_Paper.pdf",
+    "size": 226050,
+    "uploadedAt": "2026-10-04T18:55:42.153Z",
+    "visibleFrom": "2026-10-05T14:30:00.000Z"
   }
 ]
