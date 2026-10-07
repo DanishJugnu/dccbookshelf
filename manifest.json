@@ -2535,5 +2535,19 @@
     "size": 2209678,
     "uploadedAt": "2026-10-07T10:33:10.227Z",
     "visibleFrom": "2026-10-07T10:33:10.227Z"
+  },
+  {
+    "id": "1791376699460",
+    "title": "7 Oct",
+    "className": "Class Notes",
+    "board": "",
+    "subject": "CN",
+    "note": "CN",
+    "filename": "7 Oct.pdf",
+    "path": "files/1791376699460-7_Oct.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1791376699460-7_Oct.pdf",
+    "size": 1101457,
+    "uploadedAt": "2026-10-07T12:38:22.471Z",
+    "visibleFrom": "2026-10-07T12:38:22.471Z"
   }
 ]
