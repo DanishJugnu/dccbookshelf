@@ -2731,5 +2731,19 @@
     "size": 127003,
     "uploadedAt": "2026-10-12T07:36:19.192Z",
     "visibleFrom": "2026-10-12T07:36:19.192Z"
+  },
+  {
+    "id": "1791790763869",
+    "title": "10th Nisha Academic Conquest VII Question Paper",
+    "className": "10",
+    "board": "SSC",
+    "subject": "Academic Conquest VII",
+    "note": "1,3,4 question paper",
+    "filename": "AC-VII_X-Hindi_Kumarbharati_Ch1-3-4_Test.docx",
+    "path": "files/1791790763869-AC-VII_X-Hindi_Kumarbharati_Ch1-3-4_Test.docx",
+    "rawUrl": "https://raw.githubusercontent.com/danishjugnu/dccbookshelf/main/files/1791790763869-AC-VII_X-Hindi_Kumarbharati_Ch1-3-4_Test.docx",
+    "size": 13065,
+    "uploadedAt": "2026-10-12T07:39:28.237Z",
+    "visibleFrom": "2026-10-12T07:39:28.237Z"
   }
 ]
