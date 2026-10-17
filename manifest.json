@@ -3123,5 +3123,19 @@
     "size": 109783,
     "uploadedAt": "2026-10-17T17:25:07.501Z",
     "visibleFrom": "2026-10-18T03:30:00.000Z"
+  },
+  {
+    "id": "1792258024216",
+    "title": "10th Nisha Maths Worksheet",
+    "className": "10",
+    "board": "SSC",
+    "subject": "Maths",
+    "note": "Maths 2 Worksheet Chapter 1",
+    "filename": "10th Nisha Maths Worksheet.pdf",
+    "path": "files/1792258024216-10th_Nisha_Maths_Worksheet.pdf",
+    "rawUrl": "https://raw.githubusercontent.com/DanishJugnu/dccbookshelf/main/files/1792258024216-10th_Nisha_Maths_Worksheet.pdf",
+    "size": 190237,
+    "uploadedAt": "2026-10-17T17:27:06.051Z",
+    "visibleFrom": "2026-10-17T03:30:00.000Z"
   }
 ]
